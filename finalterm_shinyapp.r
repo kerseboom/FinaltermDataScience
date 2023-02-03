@@ -137,9 +137,11 @@ ui <- fluidPage(
     position = "right",
     sidebarPanel(plotOutput(outputId = "plot_modalsplit"),
                  verbatimTextOutput("info")),
-    mainPanel(leafletOutput("map"),
+    mainPanel(leafletOutput("map", height = "85vh"),
               verbatimTextOutput("legend")))
   )
+
+
 
 
 #### SHINY SERVER ####
