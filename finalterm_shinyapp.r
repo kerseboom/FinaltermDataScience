@@ -171,8 +171,13 @@ server <- function(input, output) {
 
     tvz_matrix_filtered <- tvz_matrix_joined[tvz_matrix_joined$start_district_name == polygon_name, ] # filter data for map based on polygon name
     
-    tvz_matrix_filtered <- tvz_matrix_filtered %>% 
-      mutate(labels = paste0(round(count), " Wege"))
+    tvz_matrix_filtered <- tvz_matrix_filtered %>%
+      mutate(labels = paste(
+        "<strong>trips:", count,
+        "</strong><br>inhabitants:", pop,
+        "</strong><br>mobility rate:", rate) %>%
+          lapply(htmltools::HTML)
+      )
     
     bins <- seq(min(tvz_matrix_filtered$count, tvz_matrix_filtered$count),    # create bins for colorpal
                 max(tvz_matrix_filtered$count, tvz_matrix_filtered$count),
