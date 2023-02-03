@@ -170,8 +170,8 @@ server <- function(input, output) {
     
     tvz_matrix_filtered <- tvz_matrix_filtered %>%
       mutate(labels = paste(
-        "</strong>", polygon_name,
-        "</strong><br>", count, "trips to destination") %>%
+        "</strong>From ", polygon_name,
+        "</strong><br>", count, "trips to this district") %>%
           lapply(htmltools::HTML)
       )
     
@@ -183,17 +183,15 @@ server <- function(input, output) {
                                               "mobility rate: ", round(tvz_matrix_filtered$rate[1], 4), "\n")}
     })
     
-    bins <- seq(min(tvz_matrix_filtered$count, tvz_matrix_filtered$count),    # create bins for colorpal
-                max(tvz_matrix_filtered$count, tvz_matrix_filtered$count),
-                by = (max(tvz_matrix_filtered$count, tvz_matrix_filtered$count) -
-                        min(tvz_matrix_filtered$count, tvz_matrix_filtered$count)) / 7)
     
-    pal <- colorBin("Purples",                                       # custom bin pal
-                    domain = tvz_matrix_filtered$count,
-                    bins = bins)
-    
-    palQ <- colorQuantile(palette = "YlOrRd",                          # quantile pal
+    qpal <- colorQuantile(palette = "YlOrRd",                          # quantile pal
                           domain = tvz_matrix_filtered$count[tvz_matrix_filtered$count != 0])
+    
+    qpal_colors <- unique(qpal(sort(tvz_matrix_filtered$count[tvz_matrix_filtered$count != 0])))
+    
+    qpal_labs <- quantile(tvz_matrix_filtered$count[tvz_matrix_filtered$count != 0], seq(0, 1, .250001))
+    
+    qpal_labs <- paste(round(lag(qpal_labs)), round(qpal_labs), sep = " - ")
     
       leafletProxy("map") %>%   
         removeControl("legend") %>% 
@@ -207,7 +205,7 @@ server <- function(input, output) {
       ) %>% 
       addPolygons(data = tvz_matrix_filtered,
                   layerId = ~end_district_name,
-                  fillColor = ~palQ(count),
+                  fillColor = ~qpal(count),
                   highlightOptions = highlightOptions(
                     color = "red",
                     bringToFront = T),
@@ -222,7 +220,8 @@ server <- function(input, output) {
         position = "bottomleft",
         values = tvz_matrix_filtered$count,
         title = "amount trips destinations",
-        pal=palQ
+        colors = qpal_colors,
+        labels = qpal_labs
         )
   })
 }
