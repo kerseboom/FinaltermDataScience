@@ -16,6 +16,10 @@ install_load(
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) #set wd to the directory the file was opened in
 
+if (!file.exists("data")) {
+  dir.create("data")
+}
+
 USETHISCRS <- 4326 #constant crs
 
 
