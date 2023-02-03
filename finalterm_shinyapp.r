@@ -160,8 +160,9 @@ server <- function(input, output) {
     })
   
   output$info <- renderText({
-    paste0("selected district: ", input$map_shape_click$id)
-  })
+    if( is_null(input$map_shape_click$id) ){"no district selected. select by clicking on a district"}
+    else if (!is_null(input$map_shape_click$id)){paste0("selected district: ", input$map_shape_click$id)}
+    })
 
   observeEvent(input$map_shape_click, {  # observe polygon clicks
     
@@ -173,9 +174,10 @@ server <- function(input, output) {
     
     tvz_matrix_filtered <- tvz_matrix_filtered %>%
       mutate(labels = paste(
-        "<strong>trips:", count,
+        "<strong>", polygon_name,
+        "</strong>trips:", count,
         "</strong><br>inhabitants:", pop,
-        "</strong><br>mobility rate:", rate) %>%
+        "</strong><br>mobility rate:", round(rate, 4)) %>%
           lapply(htmltools::HTML)
       )
     
@@ -191,9 +193,10 @@ server <- function(input, output) {
     palQ <- colorQuantile(palette = "YlOrRd",                          # quantile pal
                           domain = tvz_matrix_filtered$count[tvz_matrix_filtered$count != 0])
     
-      leafletProxy("map") %>%                                         # update the app with the filtered data
-      clearShapes() %>%                                             # remove existing selection
-      addPolygons(data = districts,                                       # add polygons according to selection
+      leafletProxy("map") %>%   
+        removeControl("legend") %>% 
+      clearShapes() %>%                                    
+      addPolygons(data = districts,                                       
                   layerId = ~Gemeinde_n,
                   color = "#000000",
                   weight = 2,
@@ -213,9 +216,10 @@ server <- function(input, output) {
                   noClip = T
         )%>%
         addLegend(
+        layerId = "legend",
         position = "bottomleft",
         values = tvz_matrix_filtered$count,
-        title = "Legende Bruder",
+        title = "amount trips destinations",
         pal=palQ
         )
   })
