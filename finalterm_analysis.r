@@ -76,14 +76,21 @@ trips <- trips %>% drop_na(start_district_name, #retain only trips within Berlin
 
 tvz_matrix <- trips %>% #build a start-end-matrix
   group_by(start_district_name, end_district_name) %>%
-  filter(!any(is.na(c(start_district_name, end_district_name)))) %>%
   summarize(count = n()) %>%
-  ungroup() %>%
+  ungroup()
+  
+tvz_matrix <- tvz_matrix %>% # computing sum of trips per district, mobility rate
+  left_join(pop_data,
+            by=c("start_district_name"="Gemeinde_n")) %>%
+  select(start_district_name, end_district_name, count, pop) %>%
+  group_by(start_district_name) %>%
+  mutate(totalCount = sum(count),
+         rate = sum(count) / pop)
 
 tvz_matrix_joined <- tvz_matrix %>% #add the destination geometry
   left_join(districts, 
             by=c("end_district_name"="Gemeinde_n")) %>% 
-  select(start_district_name, end_district_name, count, geometry) %>% 
+  select(start_district_name, end_district_name, count, pop, totalCount, rate, geometry) %>% 
   st_as_sf() %>% 
   st_transform(USETHISCRS)
 
