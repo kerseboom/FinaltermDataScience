@@ -132,7 +132,7 @@ plot_waittime <- plotAverageTravelWait(trips)
 
 #### SHINY UI ####
 ui <- fluidPage(
-  titlePanel("DataScience finalterm"),
+  titlePanel("MATSim Berlin scenario"),
   sidebarLayout(
     position = "right",
     sidebarPanel(plotOutput(outputId = "plot_modalsplit"),
@@ -140,6 +140,7 @@ ui <- fluidPage(
     mainPanel(leafletOutput("map"),
               verbatimTextOutput("legend")))
   )
+
 
 #### SHINY SERVER ####
 server <- function(input, output) {
@@ -158,11 +159,6 @@ server <- function(input, output) {
     
         }
     })
-  
-  output$info <- renderText({
-    if( is_null(input$map_shape_click$id) ){"no district selected. select by clicking on a district"}
-    else if (!is_null(input$map_shape_click$id)){paste0("selected district: ", input$map_shape_click$id)}
-    })
 
   observeEvent(input$map_shape_click, {  # observe polygon clicks
     
@@ -174,12 +170,18 @@ server <- function(input, output) {
     
     tvz_matrix_filtered <- tvz_matrix_filtered %>%
       mutate(labels = paste(
-        "<strong>", polygon_name,
-        "</strong>trips:", count,
-        "</strong><br>inhabitants:", pop,
-        "</strong><br>mobility rate:", round(rate, 4)) %>%
+        "</strong>", polygon_name,
+        "</strong><br>", count, "trips to destination") %>%
           lapply(htmltools::HTML)
       )
+    
+    output$info <- renderText({
+      if( is_null(polygon_name) ){"no district selected. select by clicking on a district"}
+      else if (!is_null(polygon_name)){paste0("selected district: ", polygon_name, "\n", 
+                                              "inhabitants: ", tvz_matrix_filtered$pop[1], "\n",
+                                              "total trips: ", tvz_matrix_filtered$totalCount[1], "\n",
+                                              "mobility rate: ", round(tvz_matrix_filtered$rate[1], 4), "\n")}
+    })
     
     bins <- seq(min(tvz_matrix_filtered$count, tvz_matrix_filtered$count),    # create bins for colorpal
                 max(tvz_matrix_filtered$count, tvz_matrix_filtered$count),
