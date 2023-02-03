@@ -14,59 +14,58 @@ install_load(
   "matsim"
 )
 
-<<<<<<< HEAD
 USETHISCRS <- 4326 #constant crs
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) #set wd to the directory the file was opened in
 
 
 #### DOWNLOADING / LOADING ####
-if (!file.exists("berlin-v5.5.3-10pct.output_trips.csv.gz")) { #if the matsim output trips aren't available, download 
+if (!file.exists("data/berlin-v5.5.3-10pct.output_trips.csv.gz")) { #if the matsim output trips aren't available, download 
   
   download.file(url = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/output-berlinv5.5/berlin-v5.5.3-10pct.output_trips.csv.gz",
-                destfile = "berlin-v5.5.3-10pct.output_trips.csv.gz",
+                destfile = "data/berlin-v5.5.3-10pct.output_trips.csv.gz",
                 mode = "wb")
   
-  unzip("berlin-v5.5.3-10pct.output_trips.csv.gz", exdir = getwd()) #and unzip them
+  unzip("berlin-v5.5.3-10pct.output_trips.csv.gz", exdir = paste0(getwd(), "/data")) #and unzip them
   
 }
 
 berlin_10pct_output_trips <-  readTripsTable("berlin-v5.5.3-10pct.output_trips.csv.gz") #load matsim output trips
 
-districts <- st_read("berlin_districts/bezirksgrenzen.shp") #load districts
+districts <- st_read("data/berlin_districts/bezirksgrenzen.shp") #load districts
 districts <- st_as_sf(districts) %>% st_transform(USETHISCRS)
 
 trips <- berlin_10pct_output_trips %>%  #select the needed variables
   select(dep_time, trav_time, wait_time, traveled_distance, main_mode, start_activity_type, end_activity_type, start_x, start_y, end_x, end_y)
-=======
+
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 USETHISCRS <- 4326 # constant crs
 
 #MATSim trips output
-berlin_10pct_output_trips <-  readTripsTable("berlin-v5.5.3-10pct.output_trips.csv.gz")
+berlin_10pct_output_trips <-  readTripsTable("data/berlin-v5.5.3-10pct.output_trips.csv.gz")
 
 trips <- berlin_10pct_output_trips %>%  select(dep_time, trav_time, wait_time, traveled_distance, main_mode, start_activity_type, end_activity_type, start_x, start_y, end_x, end_y)
->>>>>>> da93cbb4a3dd3f90276510b983b9030d1f187373
+
 
 
 #Population data of Berlin districts
 download.file(url = "https://download.statistik-berlin-brandenburg.de/31b0e1f55fbede61/0a9d61e4323b/SB_A01-05-00_2022h01_BE.xlsx",
-              destfile = "district_population.xlsx",
+              destfile = "data/district_population.xlsx",
               mode = "wb")
 
-pop_data <- read_excel("district_population.xlsx", range = "T5!A7:B19")
+pop_data <- read_excel("data/district_population.xlsx", range = "T5!A7:B19")
 pop_data <- pop_data %>% rename(Gemeinde_n = ...1,
                                 pop = Bezirke)
              
 # Berlin districts shape file                   
 download.file(url = "https://tsb-opendata.s3.eu-central-1.amazonaws.com/bezirksgrenzen/bezirksgrenzen.shp.zip",
-              destfile = "berlin_districts.zip",
+              destfile = "data/berlin_districts.zip",
               mode = "wb")
 
-unzip("berlin_districts.zip", exdir = "berlin_districts")
+unzip("data/berlin_districts.zip", exdir = "data/berlin_districts")
 
-districts <- st_read("berlin_districts/bezirksgrenzen.shp")
+districts <- st_read("data/berlin_districts/bezirksgrenzen.shp")
 districts <- st_as_sf(districts) %>% st_transform(USETHISCRS)
 
 
@@ -74,17 +73,17 @@ districts <- st_as_sf(districts) %>% st_transform(USETHISCRS)
 start_sf <- st_as_sf(trips, coords = c("start_x", "start_y"), crs=31468) %>% #build a start df with the coords
   st_transform(USETHISCRS) 
 
-<<<<<<< HEAD
+
 start_sf <- st_join(start_sf, districts) #join the simple feature object with the district shapefile
 
 trips$start_district_name <- start_sf$Gemeinde_n #add the district id to the dataframe
 
 end_sf <- st_as_sf(trips, coords = c("end_x", "end_y"), crs = 31468) %>% #repeat the process for end point
   st_transform(USETHISCRS)
-=======
+
 # Join the simple feature object with the district shapefile
 start_sf <- st_join(start_sf, districts)
->>>>>>> da93cbb4a3dd3f90276510b983b9030d1f187373
+
 
 end_sf <- st_join(end_sf, districts)
 
@@ -102,9 +101,9 @@ tvz_matrix <- trips %>% #build a start-end-matrix
   summarize(count = n()) %>%
   ungroup()
 
-<<<<<<< HEAD
+
 tvz_matrix_joined <- tvz_matrix %>% #add the destination geometry
-=======
+
 #dividing trips by start district pop
 tvz_matrix_test <- tvz_matrix %>%
   left_join(pop_data,
@@ -113,7 +112,7 @@ tvz_matrix_test <- tvz_matrix %>%
   mutate(countByPop = count/pop)
 
 tvz_matrix_joined <- tvz_matrix %>%
->>>>>>> da93cbb4a3dd3f90276510b983b9030d1f187373
+
   left_join(districts, 
             by=c("end_district_name"="Gemeinde_n")) %>% 
   select(start_district_name, end_district_name, count, geometry) %>% 
@@ -142,10 +141,10 @@ map <- leaflet() %>%
               weight = 2,
               fillOpacity = 0.75,
               noClip = T
-<<<<<<< HEAD
+
   )
-=======
-              )
+
+              
 
 
 #### MODALSPLIT PLOT ####
@@ -156,10 +155,6 @@ plot_modalsplit <- plotModalSplitPieChart(trips)
 #### WAITTIME PLOT ####
 
 plot_waittime <- plotAverageTravelWait(trips)
-
-
-
->>>>>>> da93cbb4a3dd3f90276510b983b9030d1f187373
 
 
 #### SHINY UI ####
