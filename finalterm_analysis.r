@@ -120,10 +120,10 @@ map <- leaflet() %>%
 
 #### SAVE DATA ####
 
-saveRDS(map, file = "LEAFLETMAP.rds")# map
-saveRDS(trips, file = "TRIPS.rds")# trips
-saveRDS(trips_filtered, file = "TRIPS_FILTERED.rds")# trips_filtered
-saveRDS(tvz_matrix_joined, file = "TVZ_MATRIX_JOINED.rds")# start-ziel-matrix
-saveRDS(tvz_matrix_filtered, file = "TVZ_MATRIX_FILTERED.rds")# start-ziel-matrix
+saveRDS(map, file = "data/LEAFLETMAP.rds")# map
+saveRDS(trips, file = "data/TRIPS.rds")# trips
+saveRDS(trips_filtered, file = "data/TRIPS_FILTERED.rds")# trips_filtered
+saveRDS(tvz_matrix_joined, file = "data/TVZ_MATRIX_JOINED.rds")# start-ziel-matrix
+saveRDS(tvz_matrix_filtered, file = "data/TVZ_MATRIX_FILTERED.rds")# start-ziel-matrix
 
 
